@@ -1,0 +1,15 @@
+D:\Dokumenty\Adam\VisualStudio\Warships\bin\Debug\net6.0\Warships.exe
+D:\Dokumenty\Adam\VisualStudio\Warships\bin\Debug\net6.0\Warships.deps.json
+D:\Dokumenty\Adam\VisualStudio\Warships\bin\Debug\net6.0\Warships.runtimeconfig.json
+D:\Dokumenty\Adam\VisualStudio\Warships\bin\Debug\net6.0\Warships.dll
+D:\Dokumenty\Adam\VisualStudio\Warships\bin\Debug\net6.0\Warships.pdb
+D:\Dokumenty\Adam\VisualStudio\Warships\obj\Debug\net6.0\Warships.csproj.AssemblyReference.cache
+D:\Dokumenty\Adam\VisualStudio\Warships\obj\Debug\net6.0\Warships.GeneratedMSBuildEditorConfig.editorconfig
+D:\Dokumenty\Adam\VisualStudio\Warships\obj\Debug\net6.0\Warships.AssemblyInfoInputs.cache
+D:\Dokumenty\Adam\VisualStudio\Warships\obj\Debug\net6.0\Warships.AssemblyInfo.cs
+D:\Dokumenty\Adam\VisualStudio\Warships\obj\Debug\net6.0\Warships.csproj.CoreCompileInputs.cache
+D:\Dokumenty\Adam\VisualStudio\Warships\obj\Debug\net6.0\Warships.dll
+D:\Dokumenty\Adam\VisualStudio\Warships\obj\Debug\net6.0\refint\Warships.dll
+D:\Dokumenty\Adam\VisualStudio\Warships\obj\Debug\net6.0\Warships.pdb
+D:\Dokumenty\Adam\VisualStudio\Warships\obj\Debug\net6.0\Warships.genruntimeconfig.cache
+D:\Dokumenty\Adam\VisualStudio\Warships\obj\Debug\net6.0\ref\Warships.dll
