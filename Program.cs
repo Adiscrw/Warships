@@ -18,7 +18,7 @@ class WarShips
     const string BoatSymol = " O";
     const string WeaponShootContinueSymbol = " O";
     const string WeaponShootStopSymbol = " S";
-    const string WeaponMissSymbol = "  ";
+    const string WeaponMissSymbol = " *";
     const string WeaponMissedSymbol = " +";
     const string WeaponHitSymbol = " x";
     const string EmptyCellSymbol = " ~";
@@ -31,6 +31,12 @@ class WarShips
     const int WeaponTypeCrossFire = 5;
 
     const int PlaygroundSize = 12;
+
+    const int HitReward = 300;
+
+    const string instructiones = "Vitejte ve hre lode, nejdrive umistete sve lode na mapu.\n" +
+        "Potom zvolte zbran, kterou pouzijete, pokud na ni budete mit dost penez. ";
+
 
 
 
@@ -91,11 +97,11 @@ class WarShips
             case WeaponTypeTorpedoVertival:
                 return 200;
             case WeaponTypeCarpetHorizontal:
-                return 1;
+                return 550;
             case WeaponTypeCarpetVertical:
-                return 1;
+                return 550;
             case WeaponTypeCrossFire:
-                return 1;
+                return 700;
 
             default:
                 return 0;
@@ -103,26 +109,26 @@ class WarShips
     }
 
 
-    static void ArrayInicialization(string[,] mapPlayer)
+    static void ArrayInicialization(string[,] playground) //inicializujeme pole
     {
-        for (int i = 0; i < mapPlayer.GetLength(1); i++)
+        for (int i = 0; i < playground.GetLength(1); i++)
         {
-            mapPlayer[0, i] = string.Format("{0:D2}", i);
-            mapPlayer[i, 0] = string.Format("{0:D2}", i);
+            playground[0, i] = string.Format("{0:D2}", i);
+            playground[i, 0] = string.Format("{0:D2}", i);
         }
-        for (int i = 1; i < mapPlayer.GetLength(0); i++)
+        for (int i = 1; i < playground.GetLength(0); i++)
         {
-            for (int j = 1; j < mapPlayer.GetLength(1) - 1; j++)
+            for (int j = 1; j < playground.GetLength(1) - 1; j++)
             {
-                mapPlayer[i, j] = EmptyCellSymbol;
+                playground[i, j] = EmptyCellSymbol;
             }
         }
-        for (int i = 0; i < mapPlayer.GetLength(1); i++)
+        for (int i = 0; i < playground.GetLength(1); i++)
         {
-            mapPlayer[PlaygroundSize - 1, i] = " ";
-            mapPlayer[i, PlaygroundSize - 1] = " ";
+            playground[PlaygroundSize - 1, i] = " ";
+            playground[i, PlaygroundSize - 1] = " ";
         }
-    }
+    }//
 
     static void BoatPlacement(string[,] array, int boatLength, int x, int y, int direction)
     {
@@ -159,24 +165,24 @@ class WarShips
         {
             Console.WriteLine("Neplatny vyraz, zadejte znovu");
         }
-    }
-    static bool AroundCheck(string[,] array, int boatLength, int x, int y, int direction)
+    }//umistujeme lod na mapu
+    static bool AroundCheck(string[,] array, int boatLength, int x, int y, int direction)//pri zadavani kontrolujeme jestli v okoli nelezi jina lod
     {
         bool status = false;
         if (direction == 1)
         {
-            Console.WriteLine("Smer zadan spravne");
+           // Console.WriteLine("Smer zadan spravne");
             for (int i = -1; i < boatLength + 1; i++)
             {
                 if (0 <= x + i && x + i <= 11 && array[x + i, y + 1] != BoatSymol && array[x + i, y - 1] != BoatSymol && array[x + i, y] != BoatSymol)
                 {
                     status = true;
-                    Console.WriteLine("Kolem lodi nelezi jina lod");
-                    Console.WriteLine("souradnice je na mape");
+                   // Console.WriteLine("Kolem lodi nelezi jina lod");
+                   // Console.WriteLine("souradnice je na mape");
                 }
                 else
                 {
-                    Console.WriteLine("Chyba");
+                   // Console.WriteLine("Chyba");
                     status = false;
                     return status;
                 }
@@ -235,321 +241,194 @@ class WarShips
         return status;
     }
 
-    static void PlayerWiewMap(string[,] playerView, List<Coordinates> hits)
+    static int RecordHitsToPlayground(string[,] playground, List<Hit> hits,int money)
     {
         foreach (var hit in hits)
         {
-            playerView[hit.Y, hit.X] = WeaponHitSymbol;
-
+            if (hit.HitType == HitTypes.Hit)
+            {
+                playground[hit.X, hit.Y] = WeaponHitSymbol;
+                money += HitReward;
+            }
+            else
+            {
+                playground[hit.X, hit.Y] = WeaponMissSymbol;
+            }
         }
-        Print2DArray(playerView);
+        return money;
     }
 
 
 
-    static List<Coordinates> CheckHit(string[,] pattern, string[,] playground, int shot_x, int shot_y)
+    static List<Hit> CheckHit(string[,] pattern, string[,] playground, int shot_x, int shot_y)
     {
-        List<Coordinates> result = new List<Coordinates>();
-        for (int y = 0; y < pattern.Length; y++)
+        List<Hit> result = new List<Hit>();
+        bool stopIteration = false;
+
+        for (int y = 0; y < pattern.GetLength(1); y++)
         {
-            for (int x = 0; x < pattern[y, 0].Length; x++)
+            for (int x = 0; x < pattern.GetLength(0); x++)
             {
-                if (y + shot_y >= playground.GetLength(0) || x + shot_x >= playground.GetLength(1))
+                if (y + shot_y >= playground.GetLength(0)-1 || x + shot_x >= playground.GetLength(1) - 1)
                 {
                     // zkontroloujeme, jestli uz nejsme mimo hriste
                     continue;
                 }
 
-                if (playground[y + shot_y,x + shot_x] == BoatSymol)
+                switch (playground[x + shot_x, y + shot_y])
                 {
-                    // dale zpracovavame je tehdy, pokud na danem miste hriste je kus lodi
-                    if (pattern[y,x] == WeaponShootContinueSymbol || pattern[y, x] == WeaponShootStopSymbol)
-                    {
-                        // pokud je v matici symbol zasahu, tak zaznamename zasah
-                        result.Add(new Coordinates(y + shot_y, x + shot_x));
-                    }
+                    case BoatSymol:
+                        // dale zpracovavame je tehdy, pokud na danem miste hriste je kus lodi
+                        if (pattern[x, y] == WeaponShootContinueSymbol || pattern[x, y] == WeaponShootStopSymbol)
+                        {
+                            // pokud je v matici symbol zasahu, tak zaznamename zasah
+                            result.Add(new Hit(HitTypes.Hit, x + shot_x, y + shot_y));
+                        }
 
-                    if (pattern[y, x] == WeaponShootStopSymbol)
-                    {
-                        // pokud se jedna o zasah, po kterem se ma koncit, tak koncime
+                        if (pattern[x, y] == WeaponShootStopSymbol)
+                        {
+                            // pokud se jedna o zasah, po kterem se ma koncit, tak koncime
+                            stopIteration = true;
+                        }
+
                         break;
-                    }
+
+                    case EmptyCellSymbol:
+                        // dale zpracovavame je tehdy, pokud na danem miste hriste je kus lodi
+                        if (pattern[x, y] == WeaponShootContinueSymbol || pattern[x, y] == WeaponShootStopSymbol)
+                        {
+                            // pokud je v matici symbol zasahu, tak zaznamename zasah
+                            result.Add(new Hit(HitTypes.Miss, x + shot_x, y + shot_y));
+                        }
+
+                        break;
+
+                    default:
+                        Console.WriteLine("Neocekavany symbol >{0}< na hracim poli [{1}, {2}]", playground[x + shot_x, y + shot_y], x + shot_x, y + shot_y);
+                        break;
+                }       
+
+                if (stopIteration)
+                {
+                    break;
                 }
+            }
+
+            if (stopIteration)
+            {
+                break;
             }
         }
-
-        /*
-        if(weapon == 0) 
-        {
-            if (playground[x,y] == pattern[0,0])
-            {
-                playground[x, y] = "x";
-                result.Add(new Coordinates(x, y));
-            }
-            else 
-            {
-
-            }
-        }
-        else if(weapon == 1) //xtorpedo
-        {
-            for (int i = 0; i <= playground.GetLength(0)-1; i++)
-            {
-                if (playground[x,y+i] == pattern[1,y+i])
-                {
-                    playground[x + i, y] = "x";
-                    i = playground.GetLength(0);
-                    result.Add(new Coordinates(x+i, y));
-                }
-                else
-                {
-
-                }
-            }
-
-        }
-        else if (weapon == 2)//ytorpedo
-        {
-            for (int i = 0; i <= playground.GetLength(1)-1; i++)
-            {
-                if (playground[x+i, y] == pattern[1, y + i])
-                {
-                    playground[x+i, y] = "x";
-                    i = playground.GetLength(1);
-                    result.Add(new Coordinates(x+i, y));
-                }
-                else
-                {
-
-                }
-            }
-        }
-        else if(weapon == 3) //xkobercovy nalet
-        {
-            for (int i = 0; i <= playground.GetLength(0) - 1; i++)
-            {
-                if (playground[x, y + i] == pattern[1, y + i])
-                {
-                    playground[x + i, y] = "x";
-                    result.Add(new Coordinates(x + i, y));
-                }
-                else
-                {
-
-                }
-            }
-        }
-        else if (weapon == 4)//ykobercovy nalet
-        {
-            for (int i = 0; i <= playground.GetLength(1) - 1; i++)
-            {
-                if (playground[x + i, y] == pattern[1, y + i])
-                {
-                    playground[x + i, y] = "x";
-                    result.Add(new Coordinates(x + i, y));
-                }
-                else
-                {
-
-                }
-            }
-        }
-        else if (weapon == 5)//kriz
-        {
-            for (int i = -1; i < playground.GetLength(0)&&i<playground.GetLength(1)&& i<=1; i++)
-            {
-                for (int j = -1; j <=1; j++)
-                {
-                    if (pattern[i + 1, j + 1] == " ")
-                    {
-
-                    }
-                    else if (playground[x+i,y+j] == pattern[i+1,j+1])
-                    {
-                        result.Add(new Coordinates(x+i, y+j));
-                        playground[x + i, y + j] = "x";
-                    }
-                    else
-                    {
-
-                    }
-
-                }
-            }
-        }
-        */
-
         return result;
     }
 
 
 
-
-
-
-    /*
-    static void ShootComputer(List<Coordinates>HitsComputer, string[,] playground, int money)
+    static int GetRandomWeapon(int moneyLimit)
     {
-        const int basic = 10;
-        const int torpedo = 200;
-        const int carpet = 510;
-        const int crossfire = 600;
-        int weapon = -1;
-        int x = -1;
-        int y = -1;
         Random rng = new Random();
+        int selectedWeapon = -1;
 
-
-        while (weapon < 0)
+        if (moneyLimit >= GetWeaponPrice(WeaponTypeBasic))
         {
-            weapon = rng.Next(0,6);
-
-            string[,] weapon_pattern = GetTargetPattern(weapon);
-            int weapon_price = GetWeaponPrice(weapon);
-            if (weapon_price >= 0)
+            while (selectedWeapon < 0)
             {
-                if (weapon_price < money)
+                selectedWeapon = rng.Next(0, 6);
+
+                int weaponPrice = GetWeaponPrice(selectedWeapon);
+
+                if (weaponPrice > moneyLimit)
                 {
-                    do
-                    {
-                        x = rng.Next(1, PlaygroundSize);
-                        y = rng.Next(1, PlaygroundSize);
-                    }
-                    while (HitsComputer.Find(x,y));
+                    selectedWeapon = -1;
+                }
+            }
+        }
 
+        return selectedWeapon;
+    }
 
-                    if (x > 0 && x < PlaygroundSize)
-                    {
-                        Console.WriteLine("Zadejte radek: ");
+    static Hit GetRandomTarget(string [,] playground)
+    {
+        Random rng = new Random();
+        Hit target = new Hit(HitTypes.Hit, -1, -1);
 
+        while (target.X < 0)
+        {
+            target.X = rng.Next(1, PlaygroundSize);
+            target.Y = rng.Next(1, PlaygroundSize);
 
-                        if (y > 0 && y < PlaygroundSize)
-                        {
-                            // zjistime, kam se zbran trefila
-                            HitsComputer = CheckHit(weapon_pattern, playground, x, y);
+            if (playground[target.X, target.Y] == WeaponHitSymbol || playground[target.X, target.Y] == WeaponMissSymbol)
+            {
+                target.X = -1;
+                target.Y = -1;
+            }
+        }
 
-                            // zakreslime zasahy do hraciho pole
-                            PlayerWiewMap(playerWiew, hits);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Zvolili jste souradnici mimo hraci pole");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Zvolili jste souradnici mimo hraci pole");
-                    }
+        return target;
+    }
+
+    static bool CheckAllBoatsHit(string[,] playground)
+    {
+        bool status = false;
+        for (int i = 1; i < playground.GetLength(0); i++)
+        {
+            for (int j = 1; j < playground.GetLength(1); j++)
+            {
+                if (playground[i,j] == BoatSymol)
+                {
+                    status = true;
                 }
                 else
                 {
-                    Console.WriteLine("Cena zbrane {0} je vyssi nez mate k dispozici {1}", weapon_price, money);
+
                 }
-
-            }
-            else
-            {
-                Console.WriteLine("Zvolili jste neexistujici zbran.");
-            }
-
-            if (weapon == 1 || weapon == 2 && money - torpedo >= 0)
-            {
-                money -= torpedo;
-            }
-            else if (weapon == 3 || weapon == 4 && money - carpet >= 0)
-            {
-                money -= carpet;
-            }
-            else if (weapon == 5 && money - crossfire >= 0)
-            {
-                money -= crossfire;
-            }
-            else if (weapon == 0 && money - basic >= 0)
-            {
-                money -= basic;
-            }
-            else if (money - basic <= 0)
-            {
-                Console.WriteLine("Pocitac vyhral, dosly vam  penize");
-                break;
-            }
-            else
-            {
-                Console.Write(" Nemate dost penez, zvolte levnejsi zbran\n");
-                weapon = -1;
             }
         }
-
-
-        while (weapon < 0)
-        {
-            weapon = rng.Next(0, 6);
-            if (weapon == 1 || weapon == 2 && money - torpedo >= 0)
-            {
-                money -= torpedo;
-            }
-            else if (weapon == 3 || weapon == 4 && money - carpet >= 0)
-            {
-                money -= carpet;
-            }
-            else if (weapon == 5 && money - crossfire >= 0)
-            {
-                money -= crossfire;
-            }
-            else if (weapon == 0 && money - basic >= 0)
-            {
-                money -= basic;
-            }
-            else if (money - basic <= 0)
-            {
-                Console.WriteLine("Vyhrali jste, pocitaci dosly penize");
-                break;
-            }
-            else
-            {
-                weapon = -1;
-            }
-        }
-        while (0 < x && x < 12)
-        {
-            if (weapon == 2 || weapon == 4)
-            {
-                x = 1;
-            }
-            else
-            {
-                x = rng.Next(1, 12);
-            }
-        }
-        while (0 < y && y < 12)
-        {
-            if (weapon == 1 || weapon == 3)
-            {
-                y = 1;
-            }
-            else
-            {
-                y = rng.Next(1, 12);
-            }
-        }
-        PlayerWiewMap(pattern, CheckHit(GetTargetPattern(weapon), playground, x, y));
+        return status;
     }
-    */
 
-    static void Shoot(string[,] playerWiew, string[,] playground, int money)
+    static int ShootComputer(string[,] playground, int money)
     {
-        const int basic = 10;
-        const int torpedo = 200;
-        const int carpet = 500;
-        const int crossfire = 600;
+        Random rng = new Random();
+        int weapon = GetRandomWeapon(money);
+
+        if (weapon < 0)
+        {
+            Console.WriteLine("Computer exhausted all money - LOST.");
+            return 0;
+        }
+
+        int weapon_price = GetWeaponPrice(weapon);
+        string[,] weapon_pattern = GetTargetPattern(weapon);
+
+        Hit target = GetRandomTarget(playground);
+
+        // zjistime, kam se zbran trefila
+        List<Hit> hits = CheckHit(weapon_pattern, playground,target.X, target.Y);
+
+        // zakreslime zasahy do hraciho pole
+        money -= weapon_price;
+        money = RecordHitsToPlayground(playground, hits, money);
+        Console.WriteLine("Penize pocitace: "+money);
+        Print2DArray("Tvoje hrací plocha:", playground);
+        return money;
+    }
+
+
+    static int Shoot(string[,] playerWiew, string[,] playground, int money)
+    {
         int weapon = -1;
         int x = -1;
         int y = -1;
 
         while (weapon < 0)
         {
-            Console.WriteLine("Vyberte zbran (0=Basic, 1=TorpedoHorizontal...: ");
-            weapon = Convert.ToInt32(Console.ReadLine());
+            while (weapon < 0 || weapon >5)
+            {
+                Console.WriteLine("Vyberte zbran \n0=Basic, cena 10\n 1=TorpedoHorizontal, cena 200\n 2=TorpedoVertical, cena 200\n 3=CarpetHorizontal, cena 550\n 4=CarpetVertical, cena 550\n 5=CrossFire, cena 700 ");
+                weapon = Convert.ToInt32(Console.ReadLine());
+            }
+            
 
             string[,] weapon_pattern = GetTargetPattern(weapon);
             int weapon_price = GetWeaponPrice(weapon);
@@ -557,10 +436,10 @@ class WarShips
             {
                 if (weapon_price < money)
                 {
-                    Console.WriteLine("Zadejte sloupec: ");
+                    Console.WriteLine("Zadejte radek: ");
                     x = Convert.ToInt32(Console.ReadLine());
 
-                    Console.WriteLine("Zadejte radek: ");
+                    Console.WriteLine("Zadejte sloupec: ");
                     y = Convert.ToInt32(Console.ReadLine());
 
                     if (y > 0 && y < PlaygroundSize)
@@ -568,10 +447,16 @@ class WarShips
                         if (x > 0 && x < PlaygroundSize)
                         {
                             // zjistime, kam se zbran trefila
-                            List<Coordinates> hits = CheckHit(weapon_pattern, playground, x, y);
+                            List<Hit> hits = CheckHit(weapon_pattern, playground, x, y);
 
                             // zakreslime zasahy do hraciho pole
-                            PlayerWiewMap(playerWiew, hits);
+                            money -= weapon_price;
+                            money = RecordHitsToPlayground(playerWiew, hits,money);
+                            Console.WriteLine("Vase penize: " + RecordHitsToPlayground(playground, hits, money));
+
+                            Print2DArray("Hrací plocha protivníka:", playerWiew);
+
+
                         }
                         else
                         {
@@ -586,6 +471,7 @@ class WarShips
                 else
                 {
                     Console.WriteLine("Cena zbrane {0} je vyssi nez mate k dispozici {1}", weapon_price, money);
+                    weapon = -1;
                 }
 
             }
@@ -593,59 +479,8 @@ class WarShips
             {
                 Console.WriteLine("Zvolili jste neexistujici zbran.");
             }
-
-            if (weapon == 1 || weapon == 2 && money - torpedo >= 0)
-            {
-                money -= torpedo;
-            }
-            else if (weapon == 3 || weapon == 4 && money - carpet >= 0)
-            {
-                money -= carpet;
-            }
-            else if (weapon == 5 && money - crossfire >= 0)
-            {
-                money -= crossfire;
-            }
-            else if (weapon == 0 && money - basic >= 0)
-            {
-                money -= basic;
-            }
-            else if (money - basic <= 0)
-            {
-                Console.WriteLine("Pocitac vyhral, dosly vam  penize");
-                break;
-            }
-            else
-            {
-                Console.Write(" Nemate dost penez, zvolte levnejsi zbran\n");
-                weapon = -1;
-            }
         }
-        while (0 < x && x < 12)
-        {
-            if (weapon == 1  || weapon == 3)
-            {
-                x = 1;
-            }
-            else
-            {
-                Console.WriteLine("Zadejte souradnice sloupce: ");
-                x = Convert.ToInt32(Console.ReadLine());
-            }
-        }
-        while (0 < y && y < 12)
-        {
-            if (weapon == 2 || weapon == 4)
-            {
-                y = 1;
-            }
-            else
-            {
-                Console.WriteLine("zadejte souradnice radku: ");
-                y = Convert.ToInt32(Console.ReadLine());
-            }
-        }
-        PlayerWiewMap(playerWiew, CheckHit(GetTargetPattern(weapon), playground, x, y));
+        return money;
     }
 
     static string Input(string array)
@@ -655,8 +490,9 @@ class WarShips
         return value;
     }
 
-    static void Print2DArray(string[,] arrayToPrint)
+    static void Print2DArray(string message, string[,] arrayToPrint)
     {
+        Console.WriteLine(message);
         string[,] array = new string[5, 5];
         for (int i = 0; i < arrayToPrint.GetLength(0); i++)
         {
@@ -671,19 +507,19 @@ class WarShips
 
     static void Main(string[] args)
     {
-        Console.WriteLine("Funguje main");
 
         string[,] mapPlayer = new string[12, 12];
         string[,] mapComputer = new string[12, 12];
         string[,] playerWiew = new string[12, 12];
-        List<Coordinates> HitsComputer = new List<Coordinates>();
-        int moneyPlayer = 500;
-        int moneyComputer = 500;
+        List<Hit> HitsComputer = new List<Hit>();
+        Console.WriteLine(instructiones);
+        
 
 
         ArrayInicialization(mapComputer);
         for (int i = 5; i > 0; i--)
         {
+            //generujeme pole pocitace
             Random rng = new Random();
             int x = rng.Next(1, 11);
             int y = rng.Next(1, 11);
@@ -691,7 +527,7 @@ class WarShips
             if (AroundCheck(mapComputer, i, x, y, direction) == true)
             {
                 BoatPlacement(mapComputer, i, x, y, direction);
-                Print2DArray(mapComputer);
+                //Print2DArray(mapComputer);
             }
             else
             {
@@ -699,21 +535,24 @@ class WarShips
             }
         }
 
-        Print2DArray(mapComputer);
+        //Print2DArray(mapComputer);
+
+
+
         ArrayInicialization(mapPlayer);
-        ArrayInicialization(playerWiew);
-        Print2DArray(mapPlayer);
-
-
         BoatPlacement(mapPlayer, 5, 1, 1, 1);
         BoatPlacement(mapPlayer, 4, 1, 3, 1);
         BoatPlacement(mapPlayer, 3, 1, 5, 1);
         BoatPlacement(mapPlayer, 2, 1, 7, 1);
         BoatPlacement(mapPlayer, 1, 1, 10, 1);
 
-        Print2DArray(mapPlayer);
+        Print2DArray("Tvoje hrací plocha:", mapPlayer);
+        
 
         /*
+        ArrayInicialization(mapPlayer);
+        ArrayInicialization(playerWiew);
+        Print2DArray("Tvoje hrací plocha:", mapPlayer);
         for (int i = 5; i > 0; i--)
         {
             Console.WriteLine(inputInfo);
@@ -724,7 +563,7 @@ class WarShips
             if (AroundCheck(mapPlayer, length, x, y, direction) == true)
             {
                 BoatPlacement(mapPlayer, length, x, y, direction);
-                Print2DArray(mapPlayer);
+                Print2DArray("Tvoje hrací plocha:", mapPlayer);
             }
             else
             {
@@ -733,25 +572,62 @@ class WarShips
             }
         }
         */
+        int moneyPlayer = 500;
+        int moneyComputer = 500;
+        bool status = true;
+        while (status == true)
+        {           
+            if (CheckAllBoatsHit(mapComputer) == false)
+            {
+                Console.WriteLine("Pocitac prohral, potopili jste vsechny lode");
+                status = false;
+                break;
+            }
 
-        while (true)
-        {
-            Shoot(playerWiew, mapComputer, moneyPlayer);
-            //ShootComputer(mapPlayer, moneyComputer);
+            if (moneyPlayer <= 0)
+            {
+                Console.WriteLine("Pocitac vyhral, dosly vam penize");
+                status = false;
+                break;
+            }
+            moneyPlayer = Shoot(playerWiew, mapComputer, moneyPlayer);
+            if (CheckAllBoatsHit(mapPlayer) == false)
+            {
+                Console.WriteLine("Pocitac vyhral, potopil vsechny lode");
+                status = false;
+                break;
+            }
+
+            if (moneyComputer <= 0)
+            {
+                Console.WriteLine("Pocitac prohral, dosly mu penize");
+                status = false;
+                break;
+            }
+            moneyComputer = ShootComputer(mapPlayer, moneyComputer);
         }
+        Console.ReadKey();
     }
 
-    public struct Coordinates
+    public struct Hit
     {
-        public Coordinates(int x, int y)
+        public Hit(HitTypes hitType, int x, int y)
         {
+            HitType = hitType;
             X = x;
             Y = y;
         }
 
+        public HitTypes HitType { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
 
-        public override string ToString() => $"({X}, {Y})";
+        public override string ToString() => $"({HitType}: {X}, {Y})";
+    }
+
+    public enum HitTypes
+    {
+        Miss = 0,
+        Hit = 1
     }
 }

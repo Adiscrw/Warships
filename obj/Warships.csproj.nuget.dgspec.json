@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Dokumenty\\Adam\\VisualStudio\\Warships\\Warships.csproj": {}
+    "C:\\Users\\vrana\\Warships\\Warships.csproj": {}
   },
   "projects": {
-    "D:\\Dokumenty\\Adam\\VisualStudio\\Warships\\Warships.csproj": {
+    "C:\\Users\\vrana\\Warships\\Warships.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Dokumenty\\Adam\\VisualStudio\\Warships\\Warships.csproj",
+        "projectUniqueName": "C:\\Users\\vrana\\Warships\\Warships.csproj",
         "projectName": "Warships",
-        "projectPath": "D:\\Dokumenty\\Adam\\VisualStudio\\Warships\\Warships.csproj",
+        "projectPath": "C:\\Users\\vrana\\Warships\\Warships.csproj",
         "packagesPath": "C:\\Users\\vrana\\.nuget\\packages\\",
-        "outputPath": "D:\\Dokumenty\\Adam\\VisualStudio\\Warships\\obj\\",
+        "outputPath": "C:\\Users\\vrana\\Warships\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\vrana\\AppData\\Roaming\\NuGet\\NuGet.Config",
